@@ -96,7 +96,6 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 			// Called usually only when user presses play or pause
 			// Sometimes calls RESUME at start of song or during play, possibly
 			// due to minor queue or play-back errors respectively.
-			setTrack(track);
 			boolean playing = bundle.getBoolean("playing", false);
 			int positionInMs = bundle.getInt("playbackPosition", 0);
 			// ^positionInMs is needed?
@@ -114,7 +113,6 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 			// after song begins play.
 			setState(Track.State.COMPLETE);
 			Log.d(TAG2, "Setting state to COMPLETE in QUEUE_CHANGED");
-			setTrack(track);
 			setState(Track.State.START);
 			Log.d(TAG2, "Setting state to START in QUEUE_CHANGED");
 		*/
@@ -137,7 +135,7 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 						bundle.getString("artist") + " - "
 								+ bundle.getString("track") + " ("
 								+ bundle.getInt("length", 0) + ")");
-				track = b.build();
+				setTrack(b.build());
 			}
 		}
 		dumpIntent(bundle);
