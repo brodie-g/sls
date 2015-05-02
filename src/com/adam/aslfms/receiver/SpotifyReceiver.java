@@ -21,6 +21,9 @@ import android.util.Log;
 import com.adam.aslfms.util.Track;
 import com.adam.aslfms.util.Util;
 
+import java.util.Iterator;
+import java.util.Set;
+
 /**
  * A BroadcastReceiver for intents sent by the Spotify Music Player.
  *
@@ -34,6 +37,7 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 
 	static final String APP_NAME = "Spotify";
 	static final String TAG = "SpotifyReceiver";
+	static final String TAG2 = "SpotDI";
 
 	static final class BroadcastTypes {
 		static final String APP_PACKAGE = "com.spotify.music";
@@ -45,22 +49,36 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 
 	static private Track track = null;
 
-	// Works well for Spotify premium users as I have tested the 7-day trial
-	// version.
-	//
-	// TODO: Make sure tracks are recognized after commercials. Manual hack is
-	// to pause and play after each commercial.
-	// Not sure how to make a work around for free users...
-	// TODO: HELP with commercial hack!!!
-	//
-	// TODO: Spotify is buggy (at least on my phone).
-	// When UI is closed the music sometimes stops or continues, but Scrobbling
-	// usually stops until Spotify process is ended and restarted.
-	//
-	// TODO: As @metanota has explained, repeating one song does not Scrobble
-	// after first scrobble for SpotifyReceiver.
-	// https://github.com/tgwizard/sls/pull/149
-	//
+	public static void dumpIntent(Bundle bundle) {
+		if (bundle != null) {
+			Set<String> keys = bundle.keySet();
+			Iterator<String> it = keys.iterator();
+			Log.e(TAG2, "Dumping Intent start");
+			while (it.hasNext()) {
+				String key = it.next();
+				Log.e(TAG2, "[" + key + "=" + bundle.get(key) + "]");
+			}
+			Log.e(TAG2, "Dumping Intent end");
+		}
+	}
+
+	/**
+	 * Works well for Spotify premium users as I have tested the 7-day trial
+	 * version.
+	 *
+	 * TODO: Make sure tracks are recognized after each commercial. Manual hack is
+	 * to pause and play after each commercial. Not sure how to make a work
+	 * around for free users... TODO: HELP with commercial hack!!!
+	 *
+	 * TODO: Spotify is buggy (at least on my phone). When UI is closed the
+	 * music sometimes stops or continues, but Scrobbling usually stops until
+	 * Spotify process is ended and restarted.
+	 *
+	 * TODO: As @metanota has explained, repeating one song does not Scrobble
+	 * after first scrobble for SpotifyReceiver.
+	 * https://github.com/tgwizard/sls/pull/149
+	 * 
+	 */
 	@Override
 	protected void parseIntent(Context ctx, String action, Bundle bundle) {
 
@@ -95,26 +113,36 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 			// Calls QUEUE once if tracks are played freely. Sends immediately
 			// after song begins play.
 			setState(Track.State.COMPLETE);
-			Log.d(TAG, "Setting state to COMPLETE in QUEUE_CHANGED");
+			Log.d(TAG2, "Setting state to COMPLETE in QUEUE_CHANGED");
 			setTrack(track);
 			setState(Track.State.START);
-			Log.d(TAG, "Setting state to START in QUEUE_CHANGED");
+			Log.d(TAG2, "Setting state to START in QUEUE_CHANGED");
 		} else if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
 			// Calls METADATA twice (if no pause) once before and once after
 			// QUEUE_CHANGED. 4 calls per pause-play
-			Track.Builder b = new Track.Builder();
-			b.setMusicAPI(musicAPI);
-			b.setWhen(Util.currentTimeSecsUTC());
-
-			b.setArtist(bundle.getString("artist"));
-			b.setAlbum(bundle.getString("album"));
-			b.setTrack(bundle.getString("track"));
-			b.setDuration(bundle.getInt("length", 0));
-			Log.d(TAG,
-					bundle.getString("artist") + " - "
-							+ bundle.getString("track") + " ("
-							+ bundle.getInt("length", 0) + ")");
-			track = b.build();
+			setState(Track.State.CHANGED);
+			
+			if(bundle.getString("id").contains(":ad:")){
+				Log.e(TAG2,"Identified ad " + bundle.getString("id"));
+			} else {
+				setState(Track.State.PAUSE);
+				setState(Track.State.RESUME);
+				Log.d(TAG2,"Set state to PAUSE then RESUME");
+				Track.Builder b = new Track.Builder();
+				b.setMusicAPI(musicAPI);
+				b.setWhen(Util.currentTimeSecsUTC());
+	
+				b.setArtist(bundle.getString("artist"));
+				b.setAlbum(bundle.getString("album"));
+				b.setTrack(bundle.getString("track"));
+				b.setDuration(bundle.getInt("length", 0));
+				Log.d(TAG,
+						bundle.getString("artist") + " - "
+								+ bundle.getString("track") + " ("
+								+ bundle.getInt("length", 0) + ")");
+				track = b.build();
+			}
 		}
+		dumpIntent(bundle);
 	}
 }
