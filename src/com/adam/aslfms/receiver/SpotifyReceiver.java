@@ -66,8 +66,8 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 	 * Works well for Spotify premium users as I have tested the 7-day trial
 	 * version.
 	 *
-	 * TODO: Make sure tracks are recognized after each commercial. Manual hack is
-	 * to pause and play after each commercial. Not sure how to make a work
+	 * TODO: Make sure tracks are recognized after each commercial. Manual hack
+	 * is to pause and play after each commercial. Not sure how to make a work
 	 * around for free users... TODO: HELP with commercial hack!!!
 	 *
 	 * TODO: Spotify is buggy (at least on my phone). When UI is closed the
@@ -109,7 +109,7 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 				setState(Track.State.PAUSE);
 				Log.d(TAG, "Setting state to PAUSE");
 			}
-		} else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
+		/**} else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
 			// Calls QUEUE once if tracks are played freely. Sends immediately
 			// after song begins play.
 			setState(Track.State.COMPLETE);
@@ -117,21 +117,18 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 			setTrack(track);
 			setState(Track.State.START);
 			Log.d(TAG2, "Setting state to START in QUEUE_CHANGED");
+		*/
 		} else if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
 			// Calls METADATA twice (if no pause) once before and once after
 			// QUEUE_CHANGED. 4 calls per pause-play
-			setState(Track.State.CHANGED);
-			
-			if(bundle.getString("id").contains(":ad:")){
-				Log.e(TAG2,"Identified ad " + bundle.getString("id"));
+			if (bundle.getString("id").contains(":ad:")) {
+				Log.e(TAG2, "Identified ad " + bundle.getString("id") + " ad length " + bundle.getInt("length", 0));
 			} else {
-				setState(Track.State.PAUSE);
-				setState(Track.State.RESUME);
-				Log.d(TAG2,"Set state to PAUSE then RESUME");
+				setState(Track.State.CHANGED);
 				Track.Builder b = new Track.Builder();
 				b.setMusicAPI(musicAPI);
 				b.setWhen(Util.currentTimeSecsUTC());
-	
+
 				b.setArtist(bundle.getString("artist"));
 				b.setAlbum(bundle.getString("album"));
 				b.setTrack(bundle.getString("track"));
