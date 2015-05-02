@@ -47,8 +47,6 @@ public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 		static final String METADATA_CHANGED = APP_PACKAGE + ".metadatachanged";
 	}
 
-	static private Track track = null;
-
 	public static void dumpIntent(Bundle bundle) {
 		if (bundle != null) {
 			Set<String> keys = bundle.keySet();
