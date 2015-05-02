@@ -34,8 +34,7 @@ import com.adam.aslfms.util.Util;
 public class SpotifyReceiver extends AbstractPlayStatusReceiver {
 
 	static final String APP_NAME = "Spotify";
-	static final String TAG = "SpotifyReceiver";
-	static final String TAG2 = "SpotDI";
+	static final String TAG = "SpotifyReceiver"; 
 
 	static final class BroadcastTypes {
 		static final String APP_PACKAGE = "com.spotify.music";
